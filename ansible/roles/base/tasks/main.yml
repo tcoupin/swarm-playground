@@ -1,0 +1,17 @@
+---
+
+- name: Install commons
+  become: yes
+  apt: name={{ item }} state=present
+  loop: "{{ packages }}"
+
+- name: Set hostname
+  become: yes
+  hostname: name="{{ inventory_hostname }}"
+
+- name: Update /etc/hosts
+  become: yes
+  lineinfile: path=/etc/hosts regexp="127.0.0.1 {{ inventory_hostname }}" line="127.0.0.1 {{ inventory_hostname }}"
+
+
+...

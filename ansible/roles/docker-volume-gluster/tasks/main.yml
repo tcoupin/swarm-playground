@@ -1,0 +1,31 @@
+---
+
+# - name: Download
+#   get_url:
+#     url: https://github.com/amarkwalder/docker-volume-glusterfs/releases/download/v0.1.1/docker-volume-glusterfs-0.1.1-linux_amd64.tar.gz
+#     dest: /home/vagrant/docker-volume-gluster.tgz
+
+# - name: Decompress
+#   become: yes
+#   unarchive:
+#     src: /home/vagrant/docker-volume-gluster.tgz
+#     remote_src: yes
+#     dest: /usr/bin
+
+- name: Install glusterfs
+  become: yes
+  apt: name=glusterfs-client state=present
+
+- name: FIXME scp docker-volume-glusterfs
+  become: yes
+  copy: src=docker-volume-glusterfs dest=/usr/bin/docker-volume-glusterfs mode=0755
+
+- name: create service
+  become: yes
+  template: src=docker-volume-glusterfs.service.j2 dest=/etc/systemd/system/docker-volume-glusterfs.service
+
+- name: start service
+  become: yes
+  service: name=docker-volume-glusterfs state=restarted enabled=yes daemon_reload=yes
+
+...

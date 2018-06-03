@@ -1,0 +1,63 @@
+---
+- name: Prerequis Ansible
+  hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: Install python
+      become: yes
+      raw: head -c 0 /usr/bin/python || (apt-get update && apt-get -y install python)
+
+- name: force gather facts
+  hosts: all
+  tasks: [ ]  
+
+
+- name: Provisioning Gluster nodes
+  hosts:
+    - gluster-nodes
+  roles:
+    - base
+    - gluster
+
+- name: Init glusterFS
+  hosts: 
+    - gluster-nodes[0]
+  roles:
+    - gluster-init
+
+
+- name: Provisioning Docker nodes
+  hosts:
+    - docker-nodes
+  roles:
+    - base
+    - docker
+    - docker-volume-gluster
+
+
+- name: Init swarm
+  hosts: 
+    - swarm-managers[0]
+  roles:
+    - swarm-init
+
+- name: Swarm managers
+  hosts: 
+    - swarm-managers
+  roles:
+    - swarm-manager
+
+- name: Swarm workers
+  hosts: 
+    - swarm-workers
+  roles:
+    - swarm-worker
+
+- name: Swarm config
+  hosts: 
+    - swarm-managers[0]
+  roles:
+    - swarm-config
+
+...

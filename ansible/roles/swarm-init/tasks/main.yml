@@ -1,0 +1,26 @@
+---
+# base on https://caylent.com/manage-docker-swarm-using-ansible/
+
+- name: "get docker info"
+  become: yes
+  shell: docker info
+  register: docker_info
+  changed_when: false
+
+- name: "create primary swarm manager"
+  become: yes
+  shell: docker swarm init --advertise-addr {{ ansible_eth1['ipv4']['address'] }}
+  when: "docker_info.stdout.find('Swarm: inactive') != -1"
+
+- name: "get docker swarm manager token"
+  become: yes
+  shell: docker swarm join-token -q manager
+  register: manager_token
+
+- name: "get docker swarm worker token"
+  become: yes
+  shell: docker swarm join-token -q worker
+  register: worker_token
+
+
+...

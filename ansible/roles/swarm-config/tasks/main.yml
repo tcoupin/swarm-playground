@@ -1,0 +1,17 @@
+---
+
+- name: "Is az label setup"
+  become: yes
+  shell: docker node inspect -f "{{ '{{' }}.Spec.Labels{{'}}'}}" {{ item }}
+  register: docker_node_label
+  loop: "{{ groups['docker-nodes'] }}"
+  changed_when: false
+
+- name: "Set az label"
+  become: yes
+  shell: docker node update --label-add az={{ item.item | regex_search('([1-9])') }} {{ item.item }}
+  when: "item.stdout.find('az:') == -1"
+  loop: "{{ docker_node_label.results }}"
+
+
+...

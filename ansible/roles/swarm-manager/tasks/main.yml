@@ -1,0 +1,16 @@
+---
+# base on https://caylent.com/manage-docker-swarm-using-ansible/
+
+- name: "get docker info"
+  become: yes
+  shell: docker info
+  register: docker_info
+  changed_when: false
+
+- name: Join swarm as manager
+  become: yes
+  shell: "docker swarm join --token {{ hostvars[groups['swarm-managers'][0]]['manager_token']['stdout'] }} {{ hostvars[groups['swarm-managers'][0]]['ansible_eth1']['ipv4']['address'] }}:2377"
+  when: "docker_info.stdout.find('Swarm: inactive') != -1"
+  retries: 3
+  delay: 20
+...

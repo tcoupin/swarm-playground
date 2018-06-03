@@ -1,0 +1,49 @@
+---
+
+- name: Installation docker dep
+  become: yes
+  apt: name={{ item }} state=present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+
+- name: Add docker GPG key
+  become: yes
+  apt_key: url=https://download.docker.com/linux/debian/gpg
+
+- name: Ajout dépôt docker
+  become: yes
+  apt_repository: repo="deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" state=present
+
+
+- name: Installation docker
+  become: yes
+  apt: name=docker-ce state=present update_cache=yes
+
+
+- name: config directory
+  become: yes
+  file: dest=/etc/systemd/system/docker.service.d state=directory
+
+
+- name: custom options
+  become: yes
+  template: dest=/etc/systemd/system/docker.service.d/01-main.conf src=main.conf.j2
+  notify:
+    - Restart docker engine
+  
+- name: user vagrant in group docker
+  become: yes
+  user: name=vagrant groups=docker append=yes
+  register: user_task
+
+- meta: flush_handlers
+
+- name: Wait 300 seconds for docker
+  become: yes
+  wait_for:
+    port: 2376
+    delay: 10
+
+
+...

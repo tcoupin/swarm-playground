@@ -1,0 +1,9 @@
+packages:
+  - vim
+  - git
+docker:
+  bridge: 192.168.91.1/24
+  gwbridge: 192.168.92.1/24
+glusterrest:
+  user: root
+  password: toor

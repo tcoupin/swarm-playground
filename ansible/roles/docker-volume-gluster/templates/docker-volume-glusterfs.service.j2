@@ -1,0 +1,16 @@
+[Unit]
+Description=Docker volume plugin GlusterFS
+After=docker.service
+ 
+[Service]
+Type=simple
+ 
+ 
+ExecStart=/usr/bin/docker-volume-glusterfs -servers {{ groups['gluster-nodes'] | map('extract', hostvars, ['ansible_eth1','ipv4','address']) | join(':') }} -rest http://{{ glusterrest.user }}:{{ glusterrest.password }}@{{ hostvars[groups['gluster-nodes'][0]]['ansible_eth1']['ipv4']['address'] }}:9000 -gfs-base /data
+Restart=on-failure
+ 
+# Configures the time to wait before service is stopped forcefully.
+TimeoutStopSec=300
+ 
+[Install]
+WantedBy=multi-user.target

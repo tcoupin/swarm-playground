@@ -1,0 +1,3 @@
+[submodule "slow-whoami"]
+	path = slow-whoami
+	url = github.com:tcoupin/slow-whoami.git

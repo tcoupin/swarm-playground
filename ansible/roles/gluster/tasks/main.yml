@@ -1,0 +1,14 @@
+---
+- name: Install glusterFS server
+  apt: name=glusterfs-server state=present
+  become: yes
+
+- name: Start glusterfs
+  service: name=glusterfs-server state=started enabled=yes
+  become: yes
+
+- name: Create dir for data /data
+  file: dest=/data state=directory
+  become: yes
+
+...

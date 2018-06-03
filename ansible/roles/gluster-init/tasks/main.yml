@@ -1,0 +1,50 @@
+---
+
+- name: Add dependencies for glusterfs-rest
+  become: yes
+  apt: name={{ item }} state=present
+  loop:
+    - python-setuptools
+    - gunicorn
+
+- name: Clone repository https://github.com/dangzhiqiang/glusterfs-rest
+  git: repo=https://github.com/dangzhiqiang/glusterfs-rest dest=/home/vagrant/glusterfs-rest force=yes
+
+# - name: Workaround to alow anonymous access to glusterfs-rest API
+#   lineinfile: path=/home/vagrant/glusterfs-rest/glusterfsrest/restapp.py regexp="return authenticate_error" line="                print('anonymous')"
+
+- name: Install
+  become: yes
+  shell: "{{ item }}"
+  ignore_errors: yes
+  args:
+    chdir: /home/vagrant/glusterfs-rest
+  loop:
+    - "python setup.py install"
+    - "glusterrest install"
+    - "glusterrest useradd -g glusterroot -p {{ glusterrest.password }} {{ glusterrest.user }}"
+
+- name: Create service glusterfs-rest
+  template: src=glusterfs-rest.service.j2 dest=/etc/systemd/system/glusterfs-rest.service
+  become: yes
+
+- name: Start API
+  service: name=glusterfs-rest state=restarted enabled=yes daemon_reload=yes
+  become: yes
+
+- name: List node in cluster
+  become: yes
+  shell: gluster pool list
+  register: gluster_pool
+
+- name: Probe nodes
+  become: yes
+  shell: gluster peer probe {{ hostvars[item]['ansible_eth1']['ipv4']['address'] }}
+  when: 
+    - item != inventory_hostname
+    - gluster_pool.stdout.find(hostvars[item]['ansible_eth1']['ipv4']['address']) == -1
+  loop: "{{ groups['gluster-nodes'] }}"
+
+
+
+...
