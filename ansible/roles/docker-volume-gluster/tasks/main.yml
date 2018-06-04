@@ -26,6 +26,9 @@
 
 - name: start service
   become: yes
-  service: name=docker-volume-glusterfs state=restarted enabled=yes daemon_reload=yes
+  service: name=docker-volume-glusterfs state=started enabled=yes daemon_reload=yes
+  notify:
+    - Restart docker engine
 
+- meta: flush_handlers
 ...

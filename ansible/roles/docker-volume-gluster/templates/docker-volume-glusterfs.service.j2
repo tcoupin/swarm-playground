@@ -1,6 +1,7 @@
 [Unit]
 Description=Docker volume plugin GlusterFS
-After=docker.service
+After=network-online.target
+Wants=network-online.target
  
 [Service]
 Type=simple
